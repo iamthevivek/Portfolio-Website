@@ -107,4 +107,158 @@ window.addEventListener('load', function() {
 });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const form = document.getElementById('contactForm');
+const submitBtn = document.getElementById('submitBtn');
+const successMessage = document.getElementById('successMessage');
+const errorMessage = document.getElementById('errorMessage');
+
+// Email validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Form validation with specific error messages
+function validateForm() {
+    const fullName = document.getElementById('fullName');
+    const email = document.getElementById('email');
+    const message = document.getElementById('message');
+    let isValid = true;
+    let errorMsg = '';
+
+    // Reset error states
+    [fullName, email, message].forEach(field => {
+        field.classList.remove('error');
+    });
+
+    // Validate full name
+    if (fullName.value.trim() === '') {
+        fullName.classList.add('error');
+        errorMsg = 'Please fill in your full name.';
+        isValid = false;
+    }
+
+    // Validate email
+    if (email.value.trim() === '') {
+        email.classList.add('error');
+        errorMsg = errorMsg ? 'Please fill in all required fields.' : 'Please fill in your email address.';
+        isValid = false;
+    } else if (!emailRegex.test(email.value.trim())) {
+        email.classList.add('error');
+        errorMsg = errorMsg ? 'Please fill in all required fields correctly.' : 'Please enter a valid email address.';
+        isValid = false;
+    }
+
+    // Validate message
+    if (message.value.trim() === '') {
+        message.classList.add('error');
+        errorMsg = errorMsg ? 'Please fill in all required fields.' : 'Please fill in your message.';
+        isValid = false;
+    }
+
+    // Update error message text
+    if (!isValid) {
+        document.getElementById('errorMessage').textContent = errorMsg;
+    }
+
+    return isValid;
+}
+
+// Form submission handler - Configured for forwork1546@gmail.com
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Hide previous messages
+    successMessage.style.display = 'none';
+    errorMessage.style.display = 'none';
+
+    // Validate form
+    if (!validateForm()) {
+        errorMessage.style.display = 'block';
+        errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Sending...';
+
+    try {
+        // Send to Formspree - Configured for forwork1546@gmail.com
+        const response = await fetch('https://formspree.io/f/movwpavk', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value,
+                _replyto: document.getElementById('email').value,
+                _subject: 'New Contact Form Message from ' + document.getElementById('fullName').value
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send message');
+        }
+
+        // Show success message
+        successMessage.style.display = 'block';
+        form.reset();
+        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+    } catch (error) {
+        // Show error message
+        errorMessage.textContent = 'Failed to send message. Please try again or contact directly at forwork1546@gmail.com.';
+        errorMessage.style.display = 'block';
+        console.error('Form submission error:', error);
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        submitBtn.textContent = originalText;
+    }
+});
+
+// Real-time validation feedback
+document.getElementById('fullName').addEventListener('blur', function() {
+    if (this.value.trim() === '') {
+        this.classList.add('error');
+    } else {
+        this.classList.remove('error');
+    }
+});
+
+document.getElementById('email').addEventListener('blur', function() {
+    if (this.value.trim() === '' || !emailRegex.test(this.value.trim())) {
+        this.classList.add('error');
+    } else {
+        this.classList.remove('error');
+    }
+});
+
+document.getElementById('message').addEventListener('blur', function() {
+    if (this.value.trim() === '') {
+        this.classList.add('error');
+    } else {
+        this.classList.remove('error');
+    }
+});
+
+
         
